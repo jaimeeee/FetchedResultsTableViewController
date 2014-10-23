@@ -40,17 +40,12 @@ class FetchedResultsTableViewController: UITableViewController, NSFetchedResults
     
     // MARK: - UITableViewDataSource
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
-        let sections = fetchedResultsController!.sections!.count
-        return sections
+        return fetchedResultsController!.sections!.count
     }
     
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        var rows = 0
-        if fetchedResultsController!.sections!.count > 0 {
-            let sectionInfo: NSFetchedResultsSectionInfo = fetchedResultsController!.sections?[section] as NSFetchedResultsSectionInfo
-            rows = sectionInfo.numberOfObjects
-        }
-        return rows;
+        let sectionInfo = self.fetchedResultsController!.sections![section] as NSFetchedResultsSectionInfo
+        return sectionInfo.numberOfObjects
     }
     
     // FIXME:
@@ -78,7 +73,7 @@ class FetchedResultsTableViewController: UITableViewController, NSFetchedResults
                 tableView.deleteSections(NSIndexSet(index: sectionIndex), withRowAnimation: UITableViewRowAnimation.Fade)
                 
             default:
-                println("Section")
+                return
             }
         }
     }
@@ -100,7 +95,7 @@ class FetchedResultsTableViewController: UITableViewController, NSFetchedResults
                 tableView.insertRowsAtIndexPaths([indexPath!], withRowAnimation: UITableViewRowAnimation.Fade)
                 
             default:
-                println("Object change")
+                return
             }
         }
     }
