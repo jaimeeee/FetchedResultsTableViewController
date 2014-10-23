@@ -48,12 +48,10 @@ class FetchedResultsTableViewController: UITableViewController, NSFetchedResults
         return sectionInfo.numberOfObjects
     }
     
-    // FIXME:
-    /*
     override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-    return fetchedResultsController!.sections?[section].name
+        let sectionInfo = self.fetchedResultsController!.sections![section] as NSFetchedResultsSectionInfo
+        return sectionInfo.name
     }
-    */
     
     // MARK: NSFetchedResultsControllerDelegate
     func controllerWillChangeContent(controller: NSFetchedResultsController) {
