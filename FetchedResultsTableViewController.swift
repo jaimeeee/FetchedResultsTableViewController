@@ -1,7 +1,8 @@
 //
 //  FetchedResultsTableViewController.swift
 //
-//  Created by Jaimeeee on 6/3/14.
+//  Created by Jaimeeee on 3/06/14.
+//  Updated: 22/10/14.
 //
 
 import UIKit
@@ -9,119 +10,104 @@ import CoreData
 
 class FetchedResultsTableViewController: UITableViewController, NSFetchedResultsControllerDelegate {
     
-    var changeIsUserDriven = false
+    required init(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+    }
     
-    var fetchedResultsController: NSFetchedResultsController = NSFetchedResultsController() {
+    var changeIsUserDriven: Bool = false
+    
+    // MARK: Fetching
+    var fetchedResultsController: NSFetchedResultsController? {
         didSet {
-            if (fetchedResultsController != oldValue) {
-                fetchedResultsController.delegate = self;
-                
-                if ((!self.title || self.title == oldValue.fetchRequest.entity.name) && (!self.navigationController || !self.navigationItem.title)) {
-                    self.title = fetchedResultsController.fetchRequest.entity.name;
-                }
-                
-                if (fetchedResultsController.isKindOfClass(NSFetchedResultsController)) {
-                    self.performFetch()
-                } else {
-                    self.tableView.reloadData()
-                }
+            if oldValue != fetchedResultsController {
+                fetchedResultsController?.delegate = self
+                performFetch()
             }
         }
     }
     
     func performFetch() {
-        if (self.fetchedResultsController.isKindOfClass(NSFetchedResultsController))
-        {
-            var error: NSError?
-            var success = self.fetchedResultsController.performFetch(&error)
-            
-            if (success) {
-                println("Success")
-            } else {
-                println("Failed")
-            }
+        var error: NSError?
+        var success: Bool = fetchedResultsController!.performFetch(&error)
+        if (!success) {
+            println("performFetch: failed")
         }
-        self.tableView.reloadData()
+        if error != nil {
+            println("\(error!.localizedDescription)")
+        }
+        tableView.reloadData()
     }
     
-    // #pragma mark - Table view data source
-
-    override func numberOfSectionsInTableView(tableView: UITableView?) -> Int {
-        // Return the number of sections.
-        return fetchedResultsController.sections.count
+    // MARK: - UITableViewDataSource
+    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+        let sections = fetchedResultsController!.sections!.count
+        return sections
     }
-
-    override func tableView(tableView: UITableView?, numberOfRowsInSection section: Int) -> Int {
-        // Return the number of rows in the section.
+    
+    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         var rows = 0
-        if (fetchedResultsController.sections.count > 0)
-        {
-            rows = fetchedResultsController.sections[section].numberOfObjects
+        if fetchedResultsController!.sections!.count > 0 {
+            let sectionInfo: NSFetchedResultsSectionInfo = fetchedResultsController!.sections?[section] as NSFetchedResultsSectionInfo
+            rows = sectionInfo.numberOfObjects
         }
-        return rows
+        return rows;
     }
     
-    override func tableView(tableView: UITableView!, titleForHeaderInSection section: Int) -> String! {
-        return fetchedResultsController.sections[section].name?
+    // FIXME:
+    /*
+    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    return fetchedResultsController!.sections?[section].name
     }
-
-    // #pragma mark - NSFetchedResultsControllerDelegate
-    func controllerWillChangeContent(controller: NSFetchedResultsController!) {
-        if (!changeIsUserDriven) {
-            self.tableView.beginUpdates()
+    */
+    
+    // MARK: NSFetchedResultsControllerDelegate
+    func controllerWillChangeContent(controller: NSFetchedResultsController) {
+        if !changeIsUserDriven {
+            tableView.beginUpdates()
         }
     }
     
-    func controller(controller: NSFetchedResultsController!, didChangeSection sectionInfo: NSFetchedResultsSectionInfo!, atIndex sectionIndex: Int, forChangeType type: NSFetchedResultsChangeType) {
-        if (!changeIsUserDriven)
-        {
+    func controller(controller: NSFetchedResultsController, didChangeSection sectionInfo: NSFetchedResultsSectionInfo, atIndex sectionIndex: Int, forChangeType type: NSFetchedResultsChangeType) {
+        if !changeIsUserDriven {
             switch type {
-            case NSFetchedResultsChangeInsert:
-                self.tableView.insertSections(NSIndexSet(index: sectionIndex), withRowAnimation: UITableViewRowAnimation.Fade)
+            case NSFetchedResultsChangeType.Insert:
+                tableView.insertSections(NSIndexSet(index: sectionIndex), withRowAnimation: UITableViewRowAnimation.Fade)
                 break
-            
-            case NSFetchedResultsChangeDelete:
-                self.tableView.deleteSections(NSIndexSet(index: sectionIndex), withRowAnimation: UITableViewRowAnimation.Fade)
-                break
-            
+                
+            case NSFetchedResultsChangeType.Delete:
+                tableView.deleteSections(NSIndexSet(index: sectionIndex), withRowAnimation: UITableViewRowAnimation.Fade)
+                
             default:
-                break
+                println("Section")
             }
         }
     }
     
-    func controller(controller: NSFetchedResultsController!, didChangeObject anObject: AnyObject!, atIndexPath indexPath: NSIndexPath!, forChangeType type: NSFetchedResultsChangeType, newIndexPath : NSIndexPath!) {
-        if (!changeIsUserDriven)
-        {
+    func controller(controller: NSFetchedResultsController, didChangeObject anObject: AnyObject, atIndexPath indexPath: NSIndexPath?, forChangeType type: NSFetchedResultsChangeType, newIndexPath: NSIndexPath?) {
+        if !changeIsUserDriven {
             switch type {
-            case NSFetchedResultsChangeInsert:
-                self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: UITableViewRowAnimation.Fade)
-                break;
+            case NSFetchedResultsChangeType.Insert:
+                tableView.insertRowsAtIndexPaths([newIndexPath!], withRowAnimation: UITableViewRowAnimation.Fade)
                 
-            case NSFetchedResultsChangeDelete:
-                self.tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: UITableViewRowAnimation.Fade)
-                break;
+            case NSFetchedResultsChangeType.Delete:
+                tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: UITableViewRowAnimation.Fade)
                 
-            case NSFetchedResultsChangeUpdate:
-                self.tableView.reloadRowsAtIndexPaths([indexPath], withRowAnimation: UITableViewRowAnimation.Fade)
-                break;
+            case NSFetchedResultsChangeType.Update:
+                tableView.reloadRowsAtIndexPaths([indexPath!], withRowAnimation: UITableViewRowAnimation.Fade)
                 
-            case NSFetchedResultsChangeMove:
-                self.tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: UITableViewRowAnimation.Fade)
-                self.tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: UITableViewRowAnimation.Fade)
-                break;
+            case NSFetchedResultsChangeType.Move:
+                tableView.deleteRowsAtIndexPaths([indexPath!], withRowAnimation: UITableViewRowAnimation.Fade)
+                tableView.insertRowsAtIndexPaths([indexPath!], withRowAnimation: UITableViewRowAnimation.Fade)
                 
             default:
-                break
+                println("Object change")
             }
         }
     }
     
-    func controllerDidChangeContent(controller: NSFetchedResultsController!)
-    {
-        if (!changeIsUserDriven) {
-            self.tableView.endUpdates()
+    func controllerDidChangeContent(controller: NSFetchedResultsController) {
+        if !changeIsUserDriven {
+            tableView.endUpdates()
         }
     }
-
 }

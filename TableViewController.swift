@@ -1,69 +1,73 @@
 //
-//  TableViewController.swift
+//  AccountsTableViewController.swift
 //
-//  Created by Jaimeeee on 6/3/14.
+//  Created by Jaimeeee on 10/22/14.
 //
 
 import UIKit
 import CoreData
 
-class TableViewController: FetchedResultsTableViewController {
+class AccountsTableViewController: FetchedResultsTableViewController {
+    
+    lazy var managedObjectContext : NSManagedObjectContext? = {
+        let appDelegate = UIApplication.sharedApplication().delegate as AppDelegate
+        if let managedObjectContext = appDelegate.managedObjectContext {
+            return managedObjectContext
+        }
+        else {
+            return nil
+        }
+    }()
     
     func initFetchedResultsController() {
-        /*
-        Set up the fetched results controller.
-        */
-        let context: NSManagedObjectContext = AppDelegate().managedObjectContext
-        
         // Create the fetch request for the entity.
-        var fetchRequest: NSFetchRequest = NSFetchRequest(entityName: "entityName")
+        let fetchRequest = NSFetchRequest()
+        
+        // MARK: Modify entityName with the Entity
+        let entity = NSEntityDescription.entityForName("entityName", inManagedObjectContext: managedObjectContext!)
+        fetchRequest.entity = entity
         
         // Set the batch size to a suitable number.
         fetchRequest.fetchBatchSize = 20
         
         // Sort using the timeStamp property.
+        // MARK: Modify key for a sortDescriptor
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "key", ascending: true)]
         
         // Use the sectionIdentifier property to group into sections.
-        self.fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: context, sectionNameKeyPath: nil, cacheName: nil)
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: managedObjectContext!, sectionNameKeyPath: nil, cacheName: nil)
     }
     
-    // #pragma mark - View
+    // MARK: View
     
-    init(coder aDecoder: NSCoder!)
-    {
-        super.init(coder: aDecoder)
-    }
-
-    init(style: UITableViewStyle) {
-        super.init(style: style)
-        // Custom initialization
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+        initFetchedResultsController()
+        
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem
         
-        self.initFetchedResultsController()
+        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
+        // self.navigationItem.leftBarButtonItem = self.editButtonItem()
+        
+        // Remove extra lines in table
+        tableView.tableFooterView = UIView(frame: CGRectZero)
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
-    // #pragma mark - Table view data source
-
+    
+    // MARK: - Table view data source
+    
     /*
     override func tableView(tableView: UITableView?, cellForRowAtIndexPath indexPath: NSIndexPath?) -> UITableViewCell? {
         let cell = tableView.dequeueReusableCellWithIdentifier("reuseIdentifier", forIndexPath: indexPath)
 
         // Configure the cell...
+        let entity = fetchedResultsController!.objectAtIndexPath(indexPath) as Entity
 
         return cell
     }
