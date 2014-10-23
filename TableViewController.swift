@@ -1,5 +1,5 @@
 //
-//  AccountsTableViewController.swift
+//  TableViewController.swift
 //
 //  Created by Jaimeeee on 10/22/14.
 //
@@ -7,7 +7,7 @@
 import UIKit
 import CoreData
 
-class AccountsTableViewController: FetchedResultsTableViewController {
+class TableViewController: FetchedResultsTableViewController {
     
     lazy var managedObjectContext : NSManagedObjectContext? = {
         let appDelegate = UIApplication.sharedApplication().delegate as AppDelegate
